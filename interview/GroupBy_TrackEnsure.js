@@ -8,21 +8,15 @@ const inputData = [
 ];
 
 function groupBy(dataList, key) {
-  const uniqueKeysAndResult = new Map();
-
-  for (const list of dataList) {
-    const realKey = list[key];
-
-    if (uniqueKeysAndResult.has(realKey)) {
-      const aa = uniqueKeysAndResult.get(realKey);
-
-      uniqueKeysAndResult.set(realKey, [list, ...aa]);
+  return dataList.reduce((acc, curr) => {
+    const realKey = curr[key];
+    if (acc[realKey]) {
+      acc[realKey].push(curr);
     } else {
-      uniqueKeysAndResult.set(realKey, [list]);
+      acc[realKey] = [curr];
     }
-  }
-
-  return Object.fromEntries(uniqueKeysAndResult);
+    return acc;
+  }, {});
 }
 
 const groupedData = groupBy(inputData, "occupation");
