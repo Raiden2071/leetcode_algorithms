@@ -1,0 +1,15 @@
+.parent {
+    display: block;
+
+    width: 100px;
+}
+
+.child {
+    width: 120px;
+    height: 50px;
+    background: aqua;
+
+    /*&:last-child {*/
+    /*    margin-left: auto;*/
+    /*}*/
+}
