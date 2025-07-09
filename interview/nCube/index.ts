@@ -39,27 +39,27 @@ const data: Company[] = [
 type Category = {
   members: Member[];
   averageAge: number;
-  // teams: string[] /* array of unique "{company.name} - {team.name}" strings */;
+  teams: string[] /* array of unique "{company.name} - {team.name}" strings */;
 };
 
 type Summary = {
-  [SummaryKeys.Junior]: Category; // age = [0, 29]
-  [SummaryKeys.Mid]: Category;    // age = [30, 39]
-  [SummaryKeys.Senior]: Category  // age = [40, infinity]
+  [GroupKeys.Junior]: Category; // age = [0, 29]
+  [GroupKeys.Mid]: Category;    // age = [30, 39]
+  [GroupKeys.Senior]: Category  // age = [40, infinity]
 };
-enum SummaryKeys {
+enum GroupKeys {
   Junior = 'junior',
   Mid = 'mid',
   Senior = 'senior',
 }
 
-function defineTheSummaryByAge(member: Member): SummaryKeys {
+function defineTheGroupByAge(member: Member): GroupKeys {
   if (member.age <= 29) {
-    return SummaryKeys.Junior;
+    return GroupKeys.Junior;
   } else if (member.age <= 39) {
-    return SummaryKeys.Mid;
+    return GroupKeys.Mid;
   } else {
-    return SummaryKeys.Senior;
+    return GroupKeys.Senior;
   }
 }
 
@@ -67,44 +67,38 @@ function updateAverageAge(existingAverage: number, count: number, newAge: number
   return (existingAverage * count + newAge) / (count + 1);
 }
 
-//
-function convertCompanyMembersToSummary(companies: Company[]) {
-  const summary: Summary = {
-    [SummaryKeys.Junior]: {
-      members: [],
-      averageAge: 0,
-      // teams: [],
-    },
-    [SummaryKeys.Mid]: {
-      members: [],
-      averageAge: 0,
-      // teams: [],
-    },
-    [SummaryKeys.Senior]: {
-      members: [],
-      averageAge: 0,
-      // teams: [],
-    },
-  }
+function defineTeams(allTeamsForCurrentGroup: string[], companyName: string, teamName: string, ): string[] {
+  const uniqueTeamName = companyName + ' - ' + teamName;
 
-  companies.forEach(({ teams }) => {
-    teams.forEach(({ members }) => {
-      members.forEach((member: Member) => {
+  return allTeamsForCurrentGroup.includes(uniqueTeamName) ? allTeamsForCurrentGroup : [...allTeamsForCurrentGroup, uniqueTeamName];
+}
 
-        const memberProperty = defineTheSummaryByAge(member);
-        const { members, averageAge = 0 } = summary[memberProperty]
+function convertCompanyMembersToSummary(companies: Company[]): Summary {
+  const initialSummary: Summary = {
+    [GroupKeys.Junior]: { members: [], averageAge: 0, teams: [] },
+    [GroupKeys.Mid]: { members: [], averageAge: 0, teams: []  },
+    [GroupKeys.Senior]: { members: [], averageAge: 0, teams: [] },
+  };
 
-        const calculateAverageAge = updateAverageAge(averageAge, members.length, member.age)
+  return companies.reduce((acc: Summary, cur: Company) => {
+      cur.teams.forEach((team) => {
+        team.members.forEach((member: Member) => {
 
-        summary[memberProperty] = {
-          members: [...members, member],
-          averageAge:  !averageAge ? member.age : calculateAverageAge,
-        }
+          const memberProperty = defineTheGroupByAge(member);
+          const { members, averageAge = 0 } = acc[memberProperty]
+
+          const calculateAverageAge = updateAverageAge(averageAge, members.length, member.age)
+
+          acc[memberProperty] = {
+            members: [...members, member],
+            averageAge:  !averageAge ? member.age : calculateAverageAge,
+            teams: defineTeams(initialSummary[memberProperty].teams, cur.name, team.name),
+          }
+        });
       });
-    });
-  });
 
-  return summary;
+      return acc;
+  }, initialSummary);
 }
 
 convertCompanyMembersToSummary(data)
