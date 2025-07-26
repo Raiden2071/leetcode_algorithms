@@ -1,30 +1,18 @@
-let fullSay = '';
-
-const target = {
-  name: 'Slava',
-  fullName: {
-    name: 'Slava',
-    surName: 'Danilchak',
-  }
-};
-
-const Say = new Proxy(target, {
-  get (target, property, receiver) {
-    console.log('get', target, ' - ', property, ' --- ', target[property]);
-    if (property in target) {
-      console.log('hello brother', target[property], target[property] === 'string')
-      if (typeof target[property] === 'string') {
-        fullSay += ' ' + target[property];
-
-        return target[property];
+const Say = new Proxy({}, {
+  get (_, property) {
+    let string = property;
+    const proxy = new Proxy(String.prototype, {
+      get (target, prop) {
+        return string += ' ' + prop;
       }
-    }
-    return '';
+    });
+
+    Reflect.setPrototypeOf(String.prototype, proxy);
+
+    return string;
   },
 });
 
-console.log(Say.fullName.surName);
+console.log(Say.fullName.surName.how.are.you.dude);
 
-console.log('fullSay', fullSay);
-
-console.log('fullSay2');
+console.log(1);
